@@ -1,16 +1,37 @@
 #!/bin/bash
+BASEDIR=$(readlink -f $(dirname $0))
 set -e
 GERRIT_ADMIN_UID=${GERRIT_ADMIN_UID:-$1}
 GERRIT_ADMIN_EMAIL=${GERRIT_ADMIN_EMAIL:-$2}
-SSH_KEY_PATH=${SSH_KEY_PATH:-~/.ssh/id_rsa}
-CHECKOUT_DIR=./git
+SSH_KEY_PATH=${SSH_KEY_PATH:-$3}
+CHECKOUT_DIR=${LDAP_OU_ACCOUNTS:-$4}
 
-JENKINS_NAME=${JENKINS_NAME:-jenkins}
-GERRIT_NAME=${GERRIT_NAME:-gerrit}
-GERRIT_SSH_HOST=${GERRIT_SSH_HOST:-$3}
-GERRIT_WEBURL=${GERRIT_WEBURL:-$4}
-JENKINS_WEBURL=${JENKINS_WEBURL:-$5}
-NEXUS_REPO=${NEXUS_REPO:-$6}
+JENKINS_NAME=${JENKINS_NAME:-$5}
+GERRIT_NAME=${GERRIT_NAME:-$6}
+GERRIT_SSH_HOST=${GERRIT_SSH_HOST:-$7}
+GERRIT_WEBURL=${GERRIT_WEBURL:-$8}
+JENKINS_WEBURL=${JENKINS_WEBURL:-$9}
+NEXUS_REPO=${NEXUS_REPO:-$10}
+
+LDAP_NAME=${LDAP_NAME:-$11}
+LDAP_VOLUME=${LDAP_VOLUME:-$12}
+SLAPD_DOMAIN=${SLAPD_DOMAIN:-$13}
+NEXUS_REP=${NEXUS_REP:-$14}
+
+DEFAULT_CONFIG_XML=config.xml
+
+#Convert FQDN to LDAP base DN
+SLAPD_TMP_DN=".${SLAPD_DOMAIN}"
+while [ -n "${SLAPD_TMP_DN}" ]; do
+SLAPD_DN=",dc=${SLAPD_TMP_DN##*.}${SLAPD_DN}"
+SLAPD_TMP_DN="${SLAPD_TMP_DN%.*}"
+done
+SLAPD_DN="${SLAPD_DN#,}"
+
+#Create config.xml
+sed -e "s/{SLAPD_DN}/${SLAPD_DN}/g" ${BASEDIR}/${DEFAULT_CONFIG_XML}.template > ${BASEDIR}/${DEFAULT_CONFIG_XML}
+sed -i "s/{LDAP_NAME}/${LDAP_NAME}/g" ${BASEDIR}/${DEFAULT_CONFIG_XML}
+
 
 #create ssh key.
 ##TODO: check key existence before create one.
@@ -72,7 +93,7 @@ kill ${SSH_AGENT_PID}
 cd -
 rm -rf ${CHECKOUT_DIR}
 [ -d ${CHECKOUT_DIR}.$$ ] && mv ${CHECKOUT_DIR}.$$  ${CHECKOUT_DIR}
-
+docker cp ${BASEDIR}/${DEFAULT_CONFIG_XML} ${JENKINS_NAME}:/usr/local/etc/${DEFAULT_CONFIG_XML}
 #Setup gerrit-trigger plugin and restart jenkins
 docker exec ${JENKINS_NAME} \
 jenkins-setup.sh \
