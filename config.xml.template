@@ -8,9 +8,9 @@
   <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
   <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.11">
     <server>{LDAP_NAME}</server>
-    <rootDN>{SWAPD_DN}</rootDN>
+    <rootDN>{SLAPD_DN}</rootDN>
     <inhibitInferRootDN>false</inhibitInferRootDN>
-    <userSearchBase>{LDAP_OU_ACCOUNTS}</userSearchBase>
+    <userSearchBase>{LDAP_ACCOUNTBASE}</userSearchBase>
     <userSearch>uid={0}</userSearch>
     <groupMembershipStrategy class="jenkins.security.plugins.ldap.FromGroupSearchLDAPGroupMembershipStrategy">
       <filter></filter>
