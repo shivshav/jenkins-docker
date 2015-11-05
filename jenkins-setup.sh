@@ -37,4 +37,5 @@ sed -i "s/{JENKINS_URL}/${JENKINS_URL}/g" \
   ${JENKINS_HOME}/jenkins.model.JenkinsLocationConfiguration.xml
 
 # Setup Jenkins Docker
+chown -R jenkins:jenkins /usr/local/etc/config.xml
 cp /usr/local/etc/config.xml ${JENKINS_HOME}/config.xml
