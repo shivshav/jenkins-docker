@@ -1,24 +1,18 @@
-FROM jenkins
+FROM openfrontier/jenkins
 MAINTAINER zsx <thinkernel@gmail.com>
 
-# Install plugins
-COPY plugins.txt /usr/local/etc/plugins.txt
-RUN /usr/local/bin/plugins.sh /usr/local/etc/plugins.txt
+COPY config.xml.template start.sh jenkins-setup.sh /
 
-# Add gerrit-trigger plugin config file
-COPY gerrit-trigger.xml /usr/local/etc/gerrit-trigger.xml
+USER root
 
-# Add credentials plugin config file
-COPY credentials.xml /usr/local/etc/credentials.xml
+RUN chown jenkins:jenkins /config.xml.template
 
-# Add maven installation config file
-COPY hudson.tasks.Maven.xml /usr/local/etc/hudson.tasks.Maven.xml
+USER jenkins
 
-# Add Jenkins URL and system admin e-mail config file
-COPY jenkins.model.JenkinsLocationConfiguration.xml /usr/local/etc/jenkins.model.JenkinsLocationConfiguration.xml
+ENV LDAP_SERVER openldap
 
-# Add setup script.
-COPY jenkins-setup.sh /usr/local/bin/jenkins-setup.sh
+ENV JENKINS_WEBURL /jenkins
 
-# Add cloud setting in config file.
-COPY config.xml /usr/local/etc/config.xml
+ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+
+CMD ["/start.sh"]
