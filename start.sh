@@ -1,17 +1,12 @@
 #!/bin/bash
 
-set -e
+echo "Running start.sh"
 
-JENKINS_SETUP=jenkins-setup.sh
-if [[ -x /$JENKINS_SETUP ]]; then 
-	/$JENKINS_SETUP
-else 
-	echo "FILE NOT FOUND!"
-fi
+SETUP_SCRIPTS=/first-run.d
 
-exec java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war $JENKINS_OPTS \"\$@\"
+for script in $SETUP_SCRIPTS/*.sh
+do
+	$script
+done
 
-
-
-
-
+/usr/local/bin/jenkins.sh
